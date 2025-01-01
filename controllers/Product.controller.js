@@ -2,9 +2,6 @@ import mongoose from 'mongoose';
 import ProductsTable from '../models/Product.model.js';
 import generateSKU from '../utils/generateSku.js';
 
-// console.log('In ra ở Controller bảng ProductsTable:', ProductsTable);
-
-
 const ProductController = {
 	//Get All Product
 	getProducts: async (req, res) => {
@@ -50,7 +47,7 @@ const ProductController = {
 
 	//Post one Product
     createProduct: async (req, res) => {
-        // console.log('Tạo một Product:', req.body);
+        console.log('Tạo một Product:', req.body);
 
         try {
             const { title, price, brand, description, product_code } = req.body;
@@ -79,7 +76,7 @@ const ProductController = {
                 description,
                 product_code: upperCaseCode
             });
-            // console.log('Tạo một Product đúc ra 1 newProduct:', newProduct);
+            console.log('Tạo một Product đúc ra 1 newProduct:', newProduct);
 
             // Lưu sản phẩm vào DB
             await newProduct.save();
@@ -89,7 +86,7 @@ const ProductController = {
                 newProduct
             });
         } catch (error) {
-            // console.log('Tạo một Product catch:', error);
+            console.log('Tạo một Product catch:', error);
 
             return res.status(500).json({
                 message: 'Internal server error',
@@ -101,7 +98,7 @@ const ProductController = {
     // Post many Products
     createProducts: async (req, res) => {
         try {
-            // console.log('Tạo nhiều Product:', req.body);
+            console.log('Tạo nhiều Product:', req.body);
 
             const { products } = req.body;
 
@@ -233,7 +230,7 @@ const ProductController = {
 
 	// Delete Product
 	deleteProduct: async (req, res) => {
-        // console.log('Xóa một Product:', req.params);
+        console.log('Xóa một Product:', req.params);
 		try {
 			const { id } = req.params;
 
@@ -259,7 +256,7 @@ const ProductController = {
 	// Delete Product
 	// Delete multiple products
     deleteProducts: async (req, res) => {
-        // console.log('Xóa Nhiều Product:', req.body);
+        console.log('Xóa Nhiều Product:', req.body);
         try {
             const { ids } = req.body;
 
