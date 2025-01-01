@@ -1,0 +1,37 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "nguyen1@gmail.com"
+    },
+    {
+      "id": 2,
+      "email": "nguyen2@gmail.com"
+    },
+    {
+      "id": 3,
+      "email": "nguyen3@gmail.com"
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "title": "Product 1",
+      "desctription": "Desctription Product 1",
+      "price": 1000
+    },
+    {
+      "id": 2,
+      "title": "Product 2",
+      "desctription": "Desctription Product 2",
+      "price": 2000
+    },
+    {
+      "id": 3,
+      "title": "Product 3",
+      "desctription": "Desctription Product 3",
+      "price": 3000
+    }
+
+  ]
+}
