@@ -1,7 +1,8 @@
+import mongoose from 'mongoose';
 import ProductsTable from '../models/Product.model.js';
 import generateSKU from '../utils/generateSku.js';
 
-console.log('In ra ở Controller bảng ProductsTable:', ProductsTable);
+// console.log('In ra ở Controller bảng ProductsTable:', ProductsTable);
 
 
 const ProductController = {
@@ -48,39 +49,37 @@ const ProductController = {
 	},
 
 	//Post one Product
-	createProduct: async (req, res) => {
-        console.log('Tạo một Product:', req.body);
+    createProduct: async (req, res) => {
+        // console.log('Tạo một Product:', req.body);
 
         try {
-            const { title, price, brand, description } = req.body;
+            const { title, price, brand, description, product_code } = req.body;
 
-            // Kiểm tra các trường bắt buộc
-            if (!title || !price || !brand) {
+            // Kiểm tra các trường bắt buộc - Validate
+            if (!title || !price || !brand || !product_code) {
                 return res.status(400).json({
-                    message: 'title, price, and brand are required'
+                    message: 'title, price, brand, and product_code are required'
                 });
             }
 
-            // Kiểm tra sản phẩm trùng lặp dựa trên title và brand
-            const existingProduct = await ProductsTable.findOne({ title, brand });
+            const upperCaseCode = product_code.toUpperCase();
+
+            // Kiểm tra sản phẩm trùng lặp trong DB dựa trên `product_code`
+            const existingProduct = await ProductsTable.findOne({ product_code: upperCaseCode });
             if (existingProduct) {
                 return res.status(409).json({
-                    message: 'Product with the same title and brand already exists'
+                    message: 'Product with the same product_code already exists'
                 });
             }
 
-            // Sinh SKU từ thông tin
-            const newSku = generateSKU(brand, title, description);
-
-            // Tạo sản phẩm mới
             const newProduct = new ProductsTable({
                 title,
                 price,
                 brand,
-                description: description || "Updating",
-                sku: newSku,
+                description,
+                product_code: upperCaseCode
             });
-            console.log('Tạo một Product đúc ra 1 newProduct:', newProduct);
+            // console.log('Tạo một Product đúc ra 1 newProduct:', newProduct);
 
             // Lưu sản phẩm vào DB
             await newProduct.save();
@@ -90,7 +89,7 @@ const ProductController = {
                 newProduct
             });
         } catch (error) {
-            console.log('Tạo một Product catch:', error);
+            // console.log('Tạo một Product catch:', error);
 
             return res.status(500).json({
                 message: 'Internal server error',
@@ -99,67 +98,90 @@ const ProductController = {
         }
     },
 
-	//Post many Product
-	createProducts: async (req, res) => {
-        console.log('Tạo nhiều Product:', req.body);
+    // Post many Products
+    createProducts: async (req, res) => {
+        try {
+            // console.log('Tạo nhiều Product:', req.body);
 
-		try {
-			const { products } = req.body;
+            const { products } = req.body;
 
-			const isValid = products.filter(
-				product => !product.title || !product.price || !product.sku
-			);
+            // Kiểm tra đầu vào có phải là mảng không rỗng không
+            if (!Array.isArray(products) || products.length === 0) {
+                return res.status(400).json({
+                    message: 'Products must be a non-empty array'
+                });
+            }
 
-			if (isValid.length) {
-				return res.status(400).json({
-					message:'Each product must have a title, price, and sku', isValid
-				});
-			}
+            // Kiểm tra các trường bắt buộc từ UI
+            const invalidProducts = products
+                .map((product, index) => ({
+                    index,
+                    missingFields: [
+                        !product.title && 'title',
+                        !product.price && 'price',
+                        !product.brand && 'brand',
+                        !product.product_code && 'product_code'
+                    ].filter(Boolean)
+                }))
+                .filter((item) => item.missingFields.length > 0);
 
-			const skus = products.map(product => product.sku);
+            if (invalidProducts.length > 0) {
+                return res.status(400).json({
+                    message: 'Some products have missing required fields',
+                    invalidProducts
+                });
+            }
 
-			const duplicateSkus = skus.filter(
-                (sku, index) => skus.indexOf(sku) !== index
+            const productsWithUppercaseCode = products.map((product) => ({
+                ...product,
+                product_code: product.product_code.toUpperCase()
+            }));
+
+            // Kiểm tra trùng lặp mã sản phẩm (`product_code`) trong đầu vào
+            const inputCodes = productsWithUppercaseCode.map((product) => product.product_code);
+            const duplicateCodes = inputCodes.filter(
+                (code, index) => inputCodes.indexOf(code) !== index
             );
 
-			if (duplicateSkus.length > 0) {
-				return res.status(400).json({
-					message: 'duplicate skus from input data',
-					duplicateSkus
-				});
-			}
+            if (duplicateCodes.length > 0) {
+                return res.status(400).json({
+                    message: 'Duplicate product codes in input data',
+                    duplicateCodes
+                });
+            }
 
-			const existingSku = await ProductsTable.find({
-				sku: { $in: skus }
-			});
+            // Kiểm tra mã sản phẩm đã tồn tại trong DB
+            const existingProducts = await ProductsTable.find({ product_code: { $in: inputCodes } });
+            const existingCodes = existingProducts.map((product) => product.product_code);
 
-			if (existingSku.length > 0) {
-				return res.status(409).json({
-					message: 'Sku already exists',
-					existingSku
-				});
-			}
+            if (existingCodes.length > 0) {
+                return res.status(409).json({
+                    message: 'Some product codes already exist in the database',
+                    existingCodes
+                });
+            }
 
-			const newProducts = await ProductsTable.insertMany(products);
+            const newProducts = await ProductsTable.insertMany(productsWithUppercaseCode);
 
-			return res.status(201).json({
-				message: 'Create product success',
-				newProducts
-			});
-		} catch (error) {
-			return res.status(500).json({
-				message: 'Internal server error',
-				error: error.message
-			});
-		}
-	},
+            return res.status(201).json({
+                message: 'Products created successfully',
+                newProducts
+            });
+        } catch (error) {
+            console.error('Tạo nhiều Product lỗi:', error);
+            return res.status(500).json({
+                message: 'Internal server error',
+                error: error.message
+            });
+        }
+    },
 
 	//Update Product
     updateProduct: async (req, res) => {
         try {
             const { id } = req.params;
 
-            // Kiểm tra sp có tồn tại không bằng id duy nhât
+            // Kiểm tra sản phẩm có tồn tại hay không bằng id - uuid duy nhất
             const findProduct = await ProductsTable.findById(id);
             if (!findProduct) {
                 return res.status(404).json({
@@ -167,28 +189,29 @@ const ProductController = {
                 });
             }
 
-            // Lọc các trường không hợp lệ
-            const { sku, title, description, price, brand } = req.body;
-            const updateData = { sku, title, description, price, brand };
+            // Chắt Lọc các trường từ request body
+            const { product_code, title, description, price, brand } = req.body;
+            const updateData = { product_code, title, description, price, brand };
 
-            // Loại các trường không hợp lệ (undefined)
+            // Loại bỏ các trường undefined
             Object.keys(updateData).forEach((key) => {
                 if (updateData[key] === undefined) {
                     delete updateData[key];
                 }
             });
 
-            // Nếu `sku` thay đổi, kiểm tra trùng lặp
-            if (sku && sku !== findProduct.sku) {
-                const existingProduct = await ProductsTable.findOne({ sku });
+            // Nếu `product_code` được cập nhật, kiểm tra có bị trùng lặp gì không
+            if (product_code && product_code.toUpperCase() !== findProduct.product_code) {
+                const upperCaseCode = product_code.toUpperCase();
+                const existingProduct = await ProductsTable.findOne({ product_code: upperCaseCode });
                 if (existingProduct) {
                     return res.status(409).json({
-                        message: 'SKU already exists'
+                        message: 'Product with the same product_code already exists'
                     });
                 }
+                updateData.product_code = upperCaseCode; // Chuẩn hóa `product_code` trước khi update
             }
 
-            // Tìm sp theo id và cập nhật sản phẩm
             const updatedProduct = await ProductsTable.findByIdAndUpdate(
                 id,
                 { $set: updateData },
@@ -200,7 +223,7 @@ const ProductController = {
                 product: updatedProduct
             });
         } catch (error) {
-            console.error('Updateproduct error:', error);
+            console.error('Update product error:', error);
             return res.status(500).json({
                 message: 'Internal server error',
                 error: error.message
@@ -208,10 +231,9 @@ const ProductController = {
         }
     },
 
-
 	// Delete Product
 	deleteProduct: async (req, res) => {
-        console.log('Xóa một Product:', req.params);
+        // console.log('Xóa một Product:', req.params);
 		try {
 			const { id } = req.params;
 
@@ -237,6 +259,7 @@ const ProductController = {
 	// Delete Product
 	// Delete multiple products
     deleteProducts: async (req, res) => {
+        // console.log('Xóa Nhiều Product:', req.body);
         try {
             const { ids } = req.body;
 
@@ -246,32 +269,31 @@ const ProductController = {
                 });
             }
 
-            // Lọc và xác thực các id ok
+            // Lọc các id hợp lệ
             const validIds = ids.filter((id) => mongoose.Types.ObjectId.isValid(id));
+
             if (validIds.length === 0) {
                 return res.status(400).json({
-                    message: 'No valid ids found in the request.'
+                    message: 'No valid ids found in the request.',
+                    invalidIds: ids
                 });
             }
 
-            const existingProducts = await ProductsTable.find({ _id: { $in: validIds } });
-            const existingIds = existingProducts.map((product) => product._id.toString());
+            // Xóa các sản phẩm có id trong mảng hợp lệ
+            const deleteResult = await ProductsTable.deleteMany({ _id: { $in: validIds } });
 
-            if (existingIds.length === 0) {
-                return res.status(404).json({
-                    message: 'No products found to delete.'
-                });
-            }
-            
-            const deleteResult = await ProductsTable.deleteMany({ _id: { $in: existingIds } });
+            const deletedCount = deleteResult.deletedCount || 0;
 
             return res.status(200).json({
-                message: `Deleted ${deleteResult.deletedCount} products successfully.`,
-                deletedIds: existingIds,
+                message: `Deleted ${deletedCount} products successfully.`,
+                deletedCount,
                 invalidIds: ids.filter((id) => !validIds.includes(id)),
-                notFoundIds: validIds.filter((id) => !existingIds.includes(id))
+                notDeletedIds: validIds.length > deletedCount
+                    ? validIds.filter(async (id) => !(await ProductsTable.exists({ _id: id })))
+                    : []
             });
         } catch (error) {
+            console.error('Delete products error:', error);
             return res.status(500).json({
                 message: 'Internal server error',
                 error: error.message
