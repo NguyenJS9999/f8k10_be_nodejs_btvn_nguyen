@@ -4,9 +4,18 @@ const productsSchema = new Schema(
 	{
 		title: { type: String, required: true },
 		price: { type: Number, required: true },
+		categoryId: {
+			type: String,
+			required: true,
+			ref: "Category",
+		},
+		description: { type: String, required: false, default: "Updating" },
 		brand: { type: String, required: true },
 		product_code: { type: String, required: true, unique: true },
-		description: { type: String, required: false, default: "Updating" },
+		isHidden: {
+			type: Boolean,
+			default: false,
+		},
 
 	},
 	{ timestamps: true, versionKey: false }

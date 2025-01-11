@@ -1,28 +1,16 @@
 import createError from 'http-errors';
-
 import express, { json } from 'express';
-import mongoose from 'mongoose';
+import connectDB from "./src/config/db.js";
+import routes from "./src/routes/index.js";
+// import dotenv from "dotenv";
+// dotenv.config();
 
 const port = 8888;
+connectDB();
 
-(async function connectMongoose() {
-	try {
-		await mongoose.connect('mongodb://localhost:27017/f8k10_nguyen');
-		console.log('Connect data Success');
-	} catch (error) {
-		console.log('Error:', error);
-	}
-})();
-
-import indexRouter from "./routes/index.js";
-import productRouter from "./routes/products.js";
-//
 const app = express();
-
 app.use(json()); // Part Data string to json
-
-app.use('/', indexRouter);
-app.use('/products', productRouter);
+app.use("/", routes);
 
 // app.use((req, res) => {
 // 	return res.status(404).json({
