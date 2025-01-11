@@ -41,7 +41,8 @@ export const getAllProducts = async (req, res) => {
 
 export const getProductById = async (req, res, next) => {
 	try {
-		const datas = await ProductTable.findById(req.params.id);
+		const datas = await ProductTable.findById(req.params.id).populate({ path: "categoryId", select: '-_id, title', });
+
 		if (!datas) {
 			return res.status(404).send({
 				message: "Not product found!",
