@@ -1,12 +1,13 @@
 import { Router } from "express";
 import productRoutes from "./productRoutes.js";
+import categoryRoutes from "./categoryRoutes.js";
 import authRoutes from "./authRoutes.js";
-import categoriesRoutes from "./categories.js";
 
 const routes = Router();
 
-routes.use("/products", productRoutes);
 routes.use("/auth", authRoutes);
-routes.use("/categories", categoriesRoutes);
+
+routes.use("/products", productRoutes);
+routes.use("/categories", categoryRoutes);
 
 export default routes;

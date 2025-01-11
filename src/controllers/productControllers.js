@@ -1,15 +1,15 @@
-import Product from "../models/Product.js";
+import ProductTable from "../models/Product.js";
 
-export const create = async (req, res) => {
+export const createProduct = async (req, res) => {
 	try {
-		const datas = await Product.create(req.body);
+		const datas = await ProductTable.create(req.body);
 		if (!datas) {
 			return res.status(404).send({
-				message: "Not found!",
+				message: "Not found product!",
 			});
 		}
 		return res.status(200).send({
-			message: "Create successfully!",
+			message: "Create product successfully!",
 			datas,
 		});
 	} catch (err) {
@@ -19,16 +19,16 @@ export const create = async (req, res) => {
 	}
 };
 
-export const getAll = async (req, res) => {
+export const getAllProducts = async (req, res) => {
 	try {
-		const datas = await Product.find();
+		const datas = await ProductTable.find();
 		if (!datas || datas.length === 0) {
 			return res.status(404).send({
-				message: "Not found!",
+				message: "Not found product!",
 			});
 		}
 		return res.status(200).send({
-			message: "Get successfully!",
+			message: "Get product successfully!",
 			datas,
 		});
 	} catch (error) {
@@ -39,60 +39,62 @@ export const getAll = async (req, res) => {
 	}
 };
 
-export const getById = async (req, res, next) => {
+export const getProductById = async (req, res, next) => {
 	try {
-		const datas = await Product.findById(req.params.id);
+		const datas = await ProductTable.findById(req.params.id);
 		if (!datas) {
 			return res.status(404).send({
-				message: "Not found!",
+				message: "Not product found!",
 			});
-			// throw Error("Not found product");
 		}
 		return res.status(200).send({
-			message: "Get successfully!",
+			message: "Get product successfully!",
 			datas,
 		});
 	} catch (error) {
-		console.log("alo");
+		console.log("getProductById error: ", error);
 		next();
 	}
 };
 
-export const removeById = async (req, res) => {
+export const updateProductById = async (req, res) => {
 	try {
-		const datas = await Product.findByIdAndDelete(req.params.id);
-		if (!datas) {
-			return res.status(404).send({
-				message: "Not found!",
-			});
-		}
-		return res.status(200).send({
-			message: "Delete successfully!",
-			datas,
-		});
-	} catch (error) {
-		return res.status(400).send({
-			message: "Error!",
-			error: error.message || "Error!",
-		});
-	}
-};
-
-export const updateById = async (req, res) => {
-	try {
-		const datas = await Product.findByIdAndUpdate(req.params.id, req.body, {
+		const datas = await ProductTable.findByIdAndUpdate(req.params.id, req.body, {
 			new: true,
 			timestamps: true,
 		});
 		if (!datas) {
 			return res.status(404).send({
-				message: "Not found!",
+				message: "Not found product!",
+			});
+		} else {
+			return res.status(200).send({
+				message: "Update product successfully!",
+				datas,
 			});
 		}
-		return res.status(200).send({
-			message: "Update successfully!",
-			datas,
+
+	} catch (error) {
+		return res.status(400).send({
+			message: "Error!",
+			error: error.message || "Error!",
 		});
+	}
+};
+
+export const removeProductById = async (req, res) => {
+	try {
+		const datas = await ProductTable.findByIdAndDelete(req.params.id);
+		if (!datas) {
+			return res.status(404).send({
+				message: "Not found product!",
+			});
+		} else {
+			return res.status(200).send({
+				message: "Delete product successfully!",
+				datas,
+			});
+		}
 	} catch (error) {
 		return res.status(400).send({
 			message: "Error!",

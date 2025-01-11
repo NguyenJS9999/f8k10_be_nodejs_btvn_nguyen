@@ -1,38 +1,40 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const categorySchema = new mongoose.Schema(
 	{
 		title: {
 			type: String,
 			unique: true,
-			required: true
+			required: true,
 		},
 		description: {
 			type: String,
-			required: false
 		},
 		slug: {
-			type: String
+			type: String,
 			// required: true,
 		},
 		isHidden: {
 			type: Boolean,
-			default: false
 		},
+		// Khong bat buoc
 		products: [
 			{
-				type: mongoose.Schema.Types.ObjectId,
-				ref: 'Product'
-			}
-		]
+				productId: {
+					type: mongoose.Schema.Types.ObjectId,
+					ref: "Product",
+				},
+			},
+		],
 	},
 	{
 		timestamps: true,
-		versionKey: false
+		versionKey: false,
 	}
 );
 
-const Category = mongoose.model('Category', categorySchema);
+const CategoryTable = mongoose.model("Category", categorySchema);
 
-export default Category;
+export default CategoryTable;
+
 // Main category (Phụ kiện)-> Sub Category (keyboard, mouse, headphone)-> Product (sản phẩm cụ thể)
