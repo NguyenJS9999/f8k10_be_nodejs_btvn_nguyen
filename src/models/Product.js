@@ -23,6 +23,10 @@ const productSchema = new mongoose.Schema(
 		isHidden: {
 			type: Boolean,
 			default: false
+		},
+		deletedAt: 	{
+			type: Date,
+			default: null,
 		}
 	},
 	{ timestamps: true, versionKey: false }

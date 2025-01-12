@@ -4,7 +4,8 @@ import {
 	getAllProducts,
 	getProductById,
 	updateProductById,
-	removeProductById
+	removeProductById,
+	softDeleteProductByIdAndUpdate
 } from '../controllers/productControllers.js';
 import productSchema from '../validations/productSchema.js';
 import { validBodyRequest } from '../middlewares/validBodyRequest.js';
@@ -17,6 +18,8 @@ productRoutes.get('/', getAllProducts);
 productRoutes.get('/:id', getProductById);
 
 productRoutes.patch('/:id', validBodyRequest(productSchema), updateProductById);
+
+productRoutes.patch('soft-delete/:id', softDeleteProductByIdAndUpdate);
 
 productRoutes.delete('/:id', removeProductById);
 
