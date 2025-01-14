@@ -14,11 +14,15 @@ import { validBodyRequest } from "../middlewares/validBodyRequest.js";
 const categoryRoutes = Router();
 
 categoryRoutes.get("/", getAllCategories);
-categoryRoutes.get("/:id", getCategoryById);
-categoryRoutes.post("/", validBodyRequest(categorySchema), createCategory);
-categoryRoutes.patch("/:id", validBodyRequest(categorySchema), updateCategory);
-categoryRoutes.patch("/soft-delete/:id", softDeleteCategory);
-categoryRoutes.delete("/:id", deleteCategory);
-categoryRoutes.patch("/restore/:id", restoreCategory);
+categoryRoutes.get("/:id", getCategoryById); // R
+
+categoryRoutes.post("/", validBodyRequest(categorySchema), createCategory); // C
+
+categoryRoutes.patch("/:id", validBodyRequest(categorySchema), updateCategory); // U
+categoryRoutes.patch("/soft-delete/:id", softDeleteCategory); // Xóa mềm
+categoryRoutes.patch("/restore/:id", restoreCategory); // Phục hồi
+
+categoryRoutes.delete("/:id", deleteCategory); // D Xóa cứng
+
 
 export default categoryRoutes;

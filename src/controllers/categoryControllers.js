@@ -40,6 +40,7 @@ export const updateCategory = async (req, res, next) => {
 
 export const softDeleteCategory = async (req, res, next) => {
   const { id } = req.params;
+
   const category = await Category.findByIdAndUpdate(
     id,
     { deletedAt: new Date(), isHidden: true },
