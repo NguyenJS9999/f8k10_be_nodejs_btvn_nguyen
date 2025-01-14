@@ -1,37 +1,33 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
+import slugMiddleware from "../middlewares/slugMiddleware.js";
 
-const productSchema = new mongoose.Schema(
-	{
-		title: {
-			type: String,
-			required: true
-		},
-		price: {
-			type: Number,
-			required: true
-		},
-
-		categoryId: {
-			type: mongoose.Schema.Types.ObjectId,
-			ref: 'Category',
-			required: true
-		},
-		description: {
-			type: String,
-			default: 'Updating'
-		},
-		isHidden: {
-			type: Boolean,
-			default: false
-		},
-		deletedAt: 	{
-			type: Date,
-			default: null,
-		}
-	},
-	{ timestamps: true, versionKey: false }
+export const productSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    price: { type: Number, required: true },
+    categoryId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      // default: "67836a60a83094583683c85e", // unclassified
+    },
+    description: { type: String },
+    isHidden: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+    slug: {
+      type: String,
+      unique: true,
+    },
+  },
+  { timestamps: true, versionKey: false },
 );
 
-const Product = mongoose.model('Product', productSchema);
+productSchema.plugin(slugMiddleware("title", "slug"));
+const Product = mongoose.model("Product", productSchema);
 
 export default Product;

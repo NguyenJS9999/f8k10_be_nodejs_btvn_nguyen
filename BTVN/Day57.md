@@ -49,7 +49,7 @@
 
 4. Tạo API cập nhật một category
 
-   - Method: PATCH   
+   - Method: PATCH
    - URL: `/api/categories/:id`
    - Request body: title, description
    - Response: Category vừa cập nhật
