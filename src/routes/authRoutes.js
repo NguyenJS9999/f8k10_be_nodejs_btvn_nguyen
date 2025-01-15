@@ -15,11 +15,7 @@ authRoutes.post("/register", validBodyRequest(registerSchema), register);
 
 authRoutes.post("/login", validBodyRequest(loginSchema), login);
 
-authRoutes.post(
-    "/auth/refresh-token",
-    validBodyRequest(loginSchema),
-    refreshToken,
-);
+authRoutes.post("/refresh-token", validBodyRequest(loginSchema), refreshToken);
 
 authRoutes.get("/profile", authenticate, getProfile);
 export default authRoutes;
